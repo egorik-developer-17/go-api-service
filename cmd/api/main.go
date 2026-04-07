@@ -1,37 +1,28 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/egorik-developer-17/go-api-service/internal/handler"
+	"github.com/egorik-developer-17/go-api-service/internal/server"
+	"github.com/egorik-developer-17/go-api-service/internal/store"
 )
 
-func main() {
-	port := os.Getenv("HTTP_PORT")
-	if port == "" {
-		port = "8080"
+func main() { // Главная функция. С неё начинается выполнение программы.
+	productStore := store.NewProductStore()                   // Создаём хранилище товаров в памяти.
+	productHandler := handler.NewProductHandler(productStore) // Создаём handler и передаём ему store.
+	router := server.NewRouter(productHandler)                // Собираем маршруты API.
+
+	port := os.Getenv("HTTP_PORT") // Пытаемся прочитать порт из переменной окружения HTTP_PORT.
+	if port == "" {                // Если переменная окружения не задана...
+		port = "8080" // ...используем стандартный порт 8080.
 	}
 
-	mux := http.NewServeMux()
+	log.Printf("server started on :%s", port) // Пишем в лог, что сервер стартует на выбранном порту.
 
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		resp := map[string]string{
-			"status":  "ok",
-			"service": "go-api-service",
-		}
-
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
-	})
-
-	log.Printf("API started on :%s", port)
-
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatal(err)
+	if err := http.ListenAndServe(":"+port, router); err != nil { // Запускаем HTTP-сервер на порту и передаём ему router.
+		log.Fatal(err) // Если сервер завершился с ошибкой, выводим её и завершаем программу.
 	}
 }

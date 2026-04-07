@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог сельхоз продукции</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Agro Catalog API</p>
+        <h1>Каталог сельхоз продукции</h1>
+        <p class="page-description">
+          Интерфейс для просмотра, добавления, обновления и удаления товаров.
+        </p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <h2>Добавить товар</h2>
+
+        <form id="product-form" class="product-form">
+          <label for="product-name" class="label">Название товара</label>
+          <input
+            id="product-name"
+            name="name"
+            type="text"
+            class="input"
+            placeholder="Например: Ячмень"
+            autocomplete="off"
+          >
+          <p id="form-error" class="form-error hidden"></p>
+
+          <button type="submit" class="button button-primary">
+            Добавить товар
+          </button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Список товаров</h2>
+            <p class="panel-description">Данные загружаются из Go API.</p>
+          </div>
+
+          <button id="reload-button" type="button" class="button button-secondary">
+            Обновить список
+          </button>
+        </div>
+
+        <div id="message" class="message hidden"></div>
+
+        <div id="empty-state" class="empty-state hidden">
+          Каталог пока пуст. Добавь первый товар через форму слева.
+        </div>
+
+        <div id="table-container" class="table-wrapper">
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="products-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/js/app.js" defer></script>
+</body>
+</html>
