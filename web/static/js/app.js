@@ -46,12 +46,13 @@ function renderProducts(products) { // Функция рисует таблиц�
 
   for (const product of products) { // Проходим по каждому товару.
     const row = document.createElement("tr"); // Создаём новую строку таблицы.
-
+    const price = Number(product.price)
+    const priceText = Number.isFinite(price) ? price.toFixed(2) : "_";
     row.innerHTML = ` 
       <td>${product.id}</td> 
       <td>${product.name}</td> 
       <td>${product.category}</td> 
-      <td>${product.price.toFixed(2)}</td> 
+      <td>${priceText}</td> 
       <td class="actions"> 
         <button type="button" class="button button-secondary" data-action="edit">Изменить</button> 
         <button type="button" class="button button-danger" data-action="delete">Удалить</button> 
