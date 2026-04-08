@@ -22,22 +22,20 @@
       <section class="panel">
         <h2>Добавить товар</h2>
 
-        <form id="product-form" class="product-form">
-          <label for="product-name" class="label">Название товара</label>
-          <input
-            id="product-name"
-            name="name"
-            type="text"
-            class="input"
-            placeholder="Например: Ячмень"
-            autocomplete="off"
-          >
-          <p id="form-error" class="form-error hidden"></p>
+        <form id="product-form" class="product-form"> <!-- Открываем форму для создания товара. -->
+  <label for="product-name" class="label">Название товара</label> <!-- Подпись для поля названия. -->
+  <input id="product-name" name="name" type="text" class="input" placeholder="Например: Ячмень" autocomplete="off"> <!-- Поле ввода названия товара. -->
 
-          <button type="submit" class="button button-primary">
-            Добавить товар
-          </button>
-        </form>
+  <label for="product-category" class="label">Категория</label> <!-- Подпись для поля категории. -->
+  <input id="product-category" name="category" type="text" class="input" placeholder="Например: зерновые" autocomplete="off"> <!-- Поле ввода категории товара. -->
+
+  <label for="product-price" class="label">Цена</label> <!-- Подпись для поля цены. -->
+  <input id="product-price" name="price" type="number" step="0.01" min="0.01" class="input" placeholder="Например: 1200.50"> <!-- Поле ввода цены. step позволяет вводить дробные числа. -->
+
+  <p id="form-error" class="form-error hidden"></p> <!-- Блок для вывода ошибок формы. -->
+
+  <button type="submit" class="button button-primary">Добавить товар</button> <!-- Кнопка отправки формы. -->
+</form>
       </section>
 
       <section class="panel">
@@ -60,13 +58,17 @@
 
         <div id="table-container" class="table-wrapper">
           <table class="products-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Название</th>
-                <th>Действия</th>
-              </tr>
-            </thead>
+            <thead> <!-- Открываем шапку таблицы. -->
+  <tr> <!-- Начинаем строку шапки. -->
+    <th>ID</th> <!-- Колонка идентификатора товара. -->
+    <th>Название</th> <!-- Колонка названия товара. -->
+    <th>Категория</th> <!-- Новая колонка категории. -->
+    <th>Цена</th> <!-- Новая колонка цены. -->
+    <th>Действия</th> <!-- Колонка кнопок действий. -->
+  </tr> <!-- Закрываем строку шапки. -->
+</thead> <!-- Закрываем шапку таблицы. -->
+
+            
             <tbody id="products-body"></tbody>
           </table>
         </div>
