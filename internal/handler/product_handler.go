@@ -54,13 +54,24 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Name = strings.TrimSpace(req.Name) // Удаляем пробелы в начале и в конце строки.
-	if req.Name == "" {                    // Если после удаления пробелов название оказалось пустым...
+	req.Category = strings.TrimSpace(req.Category)
+
+	if req.Name == "" { // Если после удаления пробелов название оказалось пустым...
 		writeError(w, http.StatusBadRequest, "name is required") // ...возвращаем 400 и сообщение об ошибке.
 		return                                                   // Прерываем выполнение функции.
 	}
+	if req.Category == "" { // Если после удаления пробелов название оказалось пустым...
+		writeError(w, http.StatusBadRequest, "category  is required") // ...возвращаем 400 и сообщение об ошибке.
+		return                                                        // Прерываем выполнение функции.
+	}
 
-	product := h.store.Create(req.Name)       // Создаём новый товар в store.
-	writeJSON(w, http.StatusCreated, product) // Возвращаем созданный товар со статусом 201 Created.
+	if req.Price <= 0 {
+		writeError(w, http.StatusBadRequest, "price must be greater than zero")
+		return // прерывание фуекции
+	}
+
+	product := h.store.Create(req.Name, req.Category, req.Price) // Создаём новый товар в store.
+	writeJSON(w, http.StatusCreated, product)                    // Возвращаем созданный товар со статусом 201 Created.
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) { // Обработчик обновления названия товара.
@@ -78,13 +89,21 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Name = strings.TrimSpace(req.Name) // Убираем лишние пробелы из названия.
-	if req.Name == "" {                    // Если название пустое...
+	req.Category = strings.TrimSpace(req.Category)
+	if req.Name == "" { // Если название пустое...
 		writeError(w, http.StatusBadRequest, "name is required") // ...возвращаем 400.
 		return                                                   // Прерываем выполнение функции.
 	}
+	if req.Name == "" { // Если название пустое...
+		writeError(w, http.StatusBadRequest, "category is required") // ...возвращаем 400.
+		return                                                       // Прерываем выполнение функции.
+	}
+	if req.Price <= 0 {
+		writeError(w, http.StatusBadRequest, "price must be greater than zero")
+	}
 
-	product, err := h.store.UpdateName(id, req.Name) // Пытаемся обновить название товара в store.
-	if err != nil {                                  // Если произошла ошибка...
+	product, err := h.store.UpdateName(id, req.Name, req.Category, req.Price) // Пытаемся обновить название товара в store.
+	if err != nil {                                                           // Если произошла ошибка...
 		if errors.Is(err, store.ErrProductNotFound) { // ...и эта ошибка означает, что товар не найден...
 			writeError(w, http.StatusNotFound, "product not found") // ...возвращаем 404.
 			return                                                  // Прерываем выполнение функции.
