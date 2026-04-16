@@ -75,7 +75,7 @@ jobs:
 
 
       - name: Build Docker image
-        run: docker build -t go-api-service:ci
+        run: docker build -t go-api-service:ci .
 
   deploy: # четвертая job
     name: Deploy
