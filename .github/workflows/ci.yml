@@ -6,10 +6,40 @@ on:
   pull_request: 
     branches: [main]
 
-jobs: 
+jobs:
+  
+  lint: # отвечает за качество кода
+     name: Run linter # отображаемое имя в git actions
+     runs-on: ubuntu-latest
+
+     permissions:
+      contents: read
+
+     steps: 
+       - name: Checkout repository
+         uses: actions/checkout@v6
+         
+       - name: Setup Go
+         uses: actions/setup-go@v6
+         with:
+          go-version: '1.26.1'
+
+
+       - name: Show Go Version
+         run: go version
+
+       - name: Download dependecies
+         run: go mod download
+
+       - name: Run go vet
+         run: go vet ./...
+
+    
+  
   test:
     name: Run tests
     runs-on: ubuntu-latest # жоба будет запускаться на linux runner от github
+    needs: lint
 
     permissions:
       contents: read
