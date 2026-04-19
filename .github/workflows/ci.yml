@@ -122,8 +122,8 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Create release archive
-        run: | 
-          tar \
+          run: | 
+           tar \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='bin' \
@@ -133,25 +133,25 @@ jobs:
 
 
       - name: Prepare ssh
-         run: |
-           mkdir -p ~/.ssh
-           chmod 700 ~/.ssh
-           printf "%s" "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
-           chmod 600 ~/.ssh/deploy_key
-           ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          run: |
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            printf "%s" "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Upload release archive to VPS
-         run: |
-           scp -i ~/.ssh/deploy_key -p "${{ secrets.VPS_HOST }}:/tmp/go-api-service-release.tar.gz"
+          run: |
+            scp -i ~/.ssh/deploy_key -p "${{ secrets.VPS_HOST }}:/tmp/go-api-service-release.tar.gz"
 
       - name: Deploy on VPS
-         run: |
-           ssh -i ~/.ssh/deploy_key -p "${{ secrets.VPS_PORT }}" \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << 'EOF'
-          set -e
-          mkdir -p /opt/go-api-service
-          find /opt/go-api-service -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} +
-            tar -xzf /tmp/go-api-service-release.tar.gz -C /opt/go-api-service
-            cd /opt/go-api-service
-            docker compose up -d --build
-          EOF 
+          run: |
+            ssh -i ~/.ssh/deploy_key -p "${{ secrets.VPS_PORT }}" \
+             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << 'EOF'
+             set -e
+             mkdir -p /opt/go-api-service
+             find /opt/go-api-service -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} +
+             tar -xzf /tmp/go-api-service-release.tar.gz -C /opt/go-api-service
+             cd /opt/go-api-service
+             docker compose up -d --build
+            EOF 
