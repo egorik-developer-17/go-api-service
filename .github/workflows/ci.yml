@@ -133,7 +133,7 @@ jobs:
             --czf release.tar.gz .
 
 
-       - name: Prepare SSH key
+       - name: Prepare ssh
          run: |
            mkdir -p ~/.ssh
            chmod 700 ~/.ssh
