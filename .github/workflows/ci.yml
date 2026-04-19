@@ -1,37 +1,159 @@
-name: ci 
+name: ci-cd 
 
 on: 
-  push:
+  push:  
     branches: [main, feature/add-price-category]
-  pull_request:
+  pull_request: 
     branches: [main]
 
 jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
+  
+  lint: # отвечает за качество кода
+     name: Run linter # отображаемое имя в git actions
+     runs-on: ubuntu-latest
+
+     permissions:
+      contents: read
+
+     steps: 
+       - name: Checkout repository
+         uses: actions/checkout@v6
+         
+       - name: Setup Go
+         uses: actions/setup-go@v6
+         with:
+          go-version: '1.26.1'
+
+
+       - name: Show Go Version
+         run: go version
+
+       - name: Download dependecies
+         run: go mod download
+
+       - name: Run go vet
+         run: go vet ./...
+
+    
+  
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest # жоба будет запускаться на linux runner от github
+    needs: lint
 
     permissions:
       contents: read
 
-
-    steps: 
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Setup Go
-        uses: actions/setup-go@v6
+      - name: Setup-Go
+        uses: actions/setup-go@v6 
         with:
           go-version: '1.26.1'
 
-
-      - name: Show Go version
+      - name: Show go version
         run: go version
 
+      - name: Download dependencies
+        run: go mod download
       - name: Run tests
         run: go test ./...
-      
-      - name: Build app
-        run: go build ./...
+  
 
-      - name: Build Docker Image
+  build: # вторая жоба отвечает за сборку приложения
+     name: Build application
+     runs-on: ubuntu-latest
+     needs: test
+
+     permissions: # права job
+       contents: read
+
+     steps: # шаги внутри жобы сбори
+        - name: Checkout repository # снова скачиваем код в runner
+          uses: actions/checkout@v6
+
+        - name: Setup Go
+          uses: actions/setup-go@v6
+          with:
+            go-version: '1.26.1'
+
+        - name: Build Go App # сборка всего приложения
+          run: go build ./...
+        
+        - name: Build binary artifact # собираем отдельный бинарник
+          run: go build -o bin/api ./cmd/api # исполняемый файл bin/api
+
+        - name: Upload binary artifact # загружаем собранный бинарник как artifatct
+          uses: actions/upload-artifact@v4 # actin для загрузки артефактов workflow
+          with: 
+            name: api-binary
+            path: bin/api
+
+  docker: # Третья job проверяеет что докер образ проекта собирается
+    name: Build Docker image # name job в интерфейсе
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      contents: read
+
+    steps: # шаги внутри docker job
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+
+      - name: Build Docker image
         run: docker build -t go-api-service:ci .
+
+  deploy_test:
+    name: Deploy to test VPS
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: test
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Create release archive
+        run: |
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='bin' \
+            --exclude='.env' \
+            --exclude='release.tar.gz' \
+            -czf release.tar.gz .
+
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf "%s" "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload release archive to VPS
+        run: |
+          scp -i ~/.ssh/deploy_key -P "${{ secrets.VPS_PORT }}" \
+            release.tar.gz \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/go-api-service-release.tar.gz"
+
+      - name: Deploy on VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.VPS_PORT }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << 'EOF'
+            set -e
+            mkdir -p /opt/go-api-service
+            find /opt/go-api-service -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} +
+            tar -xzf /tmp/go-api-service-release.tar.gz -C /opt/go-api-service
+            cd /opt/go-api-service
+            docker compose up -d --build
+          EOF  
+  
