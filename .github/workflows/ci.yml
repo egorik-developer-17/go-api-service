@@ -136,9 +136,21 @@ jobs:
           chmod 700 ~/.ssh
           cat > ~/.ssh/deploy_key <<'EOF'
           ${{ secrets.VPS_SSH_KEY}}
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          EOF
 
+          chmod 600 ~/.ssh/deploy_key
+          
+          ssh-keyscan -p "${{ secrets.VPS_PORT }}" -H "${{ secrets.VPS_HOST }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/deploy_key \
+            -p "${{ secrets.VPS_PORT }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "echo SSH connection successful"          
+          
       - name: Upload release archive to VPS
         run: |
           scp -i ~/.ssh/deploy_key -P "${{ secrets.VPS_PORT }}" \
