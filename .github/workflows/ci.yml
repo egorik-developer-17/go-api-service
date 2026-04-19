@@ -160,12 +160,11 @@ jobs:
       - name: Deploy on VPS
         run: |
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.VPS_PORT }}" \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << 'EOF'
-            set -e
-            mkdir -p /opt/go-api-service
-            find /opt/go-api-service -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} +
-            tar -xzf /tmp/go-api-service-release.tar.gz -C /opt/go-api-service
-            cd /opt/go-api-service
-            docker compose up -d --build
-          EOF  
-  
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "set -e && \
+            mkdir -p /opt/go-api-service && \
+            find /opt/go-api-service -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} + && \
+            tar -xzf /tmp/go-api-service-release.tar.gz -C /opt/go-api-service && \
+            cd /opt/go-api-service && \
+            docker compose up -d --build"
+          
