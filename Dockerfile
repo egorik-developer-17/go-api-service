@@ -14,6 +14,7 @@ WORKDIR /app
 
 RUN adduser -D appuser
 COPY --from=builder /app/bin/api /app/api
+COPY --from=builder /app/web/static /app/web/static
 
 USER appuser
 
