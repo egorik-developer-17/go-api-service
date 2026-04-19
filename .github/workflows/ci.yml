@@ -123,13 +123,13 @@ jobs:
 
       - name: Create release archive
           run: | 
-           tar \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='bin' \
-            --exclude='.env' \
-            --exclude='release.tar.gz' \
-            --czf release.tar.gz .
+            tar \
+              --exclude='.git' \
+              --exclude='.github' \
+              --exclude='bin' \
+              --exclude='.env' \
+              --exclude='release.tar.gz' \
+              --czf release.tar.gz .
 
 
       - name: Prepare ssh
