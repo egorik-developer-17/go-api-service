@@ -132,7 +132,7 @@ jobs:
             --czf release.tar.gz .
 
 
-       - name: Prepare ssh
+      - name: Prepare ssh
          run: |
            mkdir -p ~/.ssh
            chmod 700 ~/.ssh
@@ -140,11 +140,11 @@ jobs:
            chmod 600 ~/.ssh/deploy_key
            ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
-       - name: Upload release archive to VPS
+      - name: Upload release archive to VPS
          run: |
            scp -i ~/.ssh/deploy_key -p "${{ secrets.VPS_HOST }}:/tmp/go-api-service-release.tar.gz"
 
-       - name: Deploy on VPS
+      - name: Deploy on VPS
          run: |
            ssh -i ~/.ssh/deploy_key -p "${{ secrets.VPS_PORT }}" \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << 'EOF'
