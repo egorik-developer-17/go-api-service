@@ -128,8 +128,7 @@ jobs:
             --exclude='.github' \
             --exclude='bin' \
             --exclude='.env' \
-            --exclude='release.tar.gz' \
-            -czf release.tar.gz .
+            -czf /tmp/go-api-service-release.tar.gz .
 
       - name: Prepare SSH key
         run: |
@@ -142,7 +141,7 @@ jobs:
       - name: Upload release archive to VPS
         run: |
           scp -i ~/.ssh/deploy_key -P "${{ secrets.VPS_PORT }}" \
-            release.tar.gz \
+            /tmp/go-api-service-release.tar.gz \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/go-api-service-release.tar.gz"
 
       - name: Deploy on VPS
