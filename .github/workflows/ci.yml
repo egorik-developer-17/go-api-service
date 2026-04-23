@@ -1,10 +1,16 @@
 name: ci-cd 
 
 on: 
-  push:  
-    branches: [main, feature/add-price-category]
   pull_request: 
     branches: [main]
+  push:  
+    branches: [main]
+
+  workflow_dispatch:
+
+concurrency:
+  group: ci-cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   
@@ -58,8 +64,24 @@ jobs:
 
       - name: Download dependencies
         run: go mod download
-      - name: Run tests
-        run: go test ./...
+
+      - name: Run tests unit tests
+        run: go test ./... -v
+
+      - name: Run race detector
+        run: go test -race ./...
+
+      - name: Generate coverage report
+        run: go test -coverprofile=coverage.out ./...
+        
+      - name: Show coverage summary
+        run: go tool cover -func=coverage.out
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
   
 
   build: # вторая жоба отвечает за сборку приложения
@@ -83,7 +105,9 @@ jobs:
           run: go build ./...
         
         - name: Build binary artifact # собираем отдельный бинарник
-          run: go build -o bin/api ./cmd/api # исполняемый файл bin/api
+          run: |
+            mkdir -p bin
+            go build -o bin/api ./cmd/api # исполняемый файл bin/api
 
         - name: Upload binary artifact # загружаем собранный бинарник как artifatct
           uses: actions/upload-artifact@v4 # actin для загрузки артефактов workflow
