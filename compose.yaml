@@ -1,10 +1,9 @@
 services:
-   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  api:
+    image: ghcr.io/egorik-developer-17/go-api-service:${IMAGE_TAG:-latest}
     container_name: go-api-service
-    env_file:
-      - .env
     ports:
       - "8080:8080"
+    env_file:
+      - .env
+    restart: unless-stopped
