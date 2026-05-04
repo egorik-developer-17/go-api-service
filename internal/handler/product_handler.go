@@ -61,8 +61,8 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return                                                   // Прерываем выполнение функции.
 	}
 	if req.Category == "" { // Если после удаления пробелов название оказалось пустым...
-		writeError(w, http.StatusBadRequest, "category  is required") // ...возвращаем 400 и сообщение об ошибке.
-		return                                                        // Прерываем выполнение функции.
+		writeError(w, http.StatusBadRequest, "category is required") // ...возвращаем 400 и сообщение об ошибке.
+		return                                                       // Прерываем выполнение функции.
 	}
 
 	if req.Price <= 0 {
@@ -90,16 +90,18 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 	req.Name = strings.TrimSpace(req.Name) // Убираем лишние пробелы из названия.
 	req.Category = strings.TrimSpace(req.Category)
+
 	if req.Name == "" { // Если название пустое...
 		writeError(w, http.StatusBadRequest, "name is required") // ...возвращаем 400.
 		return                                                   // Прерываем выполнение функции.
 	}
-	if req.Name == "" { // Если название пустое...
+	if req.Category == "" { // Если название пустое...
 		writeError(w, http.StatusBadRequest, "category is required") // ...возвращаем 400.
 		return                                                       // Прерываем выполнение функции.
 	}
 	if req.Price <= 0 {
 		writeError(w, http.StatusBadRequest, "price must be greater than zero")
+		return
 	}
 
 	product, err := h.store.UpdateName(id, req.Name, req.Category, req.Price) // Пытаемся обновить название товара в store.
