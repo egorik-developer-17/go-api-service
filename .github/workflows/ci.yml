@@ -1,5 +1,7 @@
 name: ci-cd 
-
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 on: 
   push:  
     branches: [main, feature/add-price-category]
@@ -98,6 +100,7 @@ jobs:
 
     permissions:
       contents: read
+      packages: write
 
     steps: # шаги внутри docker job
       - name: Checkout repository
@@ -106,6 +109,41 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t go-api-service:ci .
+
+      - name: Run Docker container
+        run: |
+         docker run -d --name go-api-service-ci -p 8080:8080 go-api-service:ci
+         sleep 5
+
+      - name: Check health endpoint
+        run: curl --fail http://localhost:8080/health
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs go-api-service-ci
+
+      - name: Stop Docker container
+        if: always()
+        run: docker rm -f go-api-service-ci
+
+      - name: Login to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: |
+         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} \
+          -u "${{ github.actor }}" \
+          --password-stdin
+
+      - name: Tag Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+         docker tag go-api-service:ci ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+         docker tag go-api-service:ci ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Push Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
   deploy_test:
     name: Deploy to test VPS
