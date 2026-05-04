@@ -119,7 +119,7 @@ jobs:
           path: bin/api
 
   docker:
-    name: Build and push Docker image
+    name: Build Docker image
     runs-on: ubuntu-latest
     needs: build
 
