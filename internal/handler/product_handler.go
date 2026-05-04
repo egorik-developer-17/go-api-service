@@ -21,7 +21,7 @@ func NewProductHandler(store *store.ProductStore) *ProductHandler { // Конс�
 }
 
 func (h *ProductHandler) Health(w http.ResponseWriter, r *http.Request) { // Простой health-check endpoint.
-	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"}) // Возвращаем JSON {"status":"ok"} со статусом 200.
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "go-api-service", "version": "1.0.0"}) // Возвращаем JSON {"status":"ok"} со статусом 200.
 }
 
 func (h *ProductHandler) ListProducts(w http.ResponseWriter, r *http.Request) { // Обработчик получения всего каталога.
