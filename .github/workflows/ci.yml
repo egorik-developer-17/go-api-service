@@ -9,8 +9,8 @@ on:
     branches:
       - main
       - feature/add-price-category
+      - feature/fix-docker-files
       - feature/split-ci-workflow
-      - fix/hadler-validation-and-tests
   pull_request:
     branches:
       - main
